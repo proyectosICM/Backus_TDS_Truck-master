@@ -66,7 +66,81 @@ bool sendMessage(String msg) {
   return mesh.sendBroadcast(msg);
 }
 
+// Reforma del la lectura del boton
+// Función principal de lectura del estado del botón
 void readButtonState() {
+    // Verifica el tiempo transcurrido desde la última comprobación
+    if (currentMillis - previousButtonMillis > intervalButton) {
+        int buttonState = digitalRead(MAIN_BUTTON);
+        updateButtonState(buttonState);
+        previousButtonMillis = currentMillis;
+    }
+}
+
+// Actualiza el estado del botón
+void updateButtonState(int buttonState) {
+    if (buttonState == LOW && buttonStatePrevious == HIGH && !buttonStateLongPress) {
+        buttonLongPressMillis = currentMillis;
+        Serial.println("Button pressed");
+    }
+
+    buttonPressDuration = currentMillis - buttonLongPressMillis;
+
+    if (buttonState == LOW && !buttonStateLongPress && buttonPressDuration >= minButtonLongPressDuration) {
+        buttonStateLongPress = true;
+        Serial.println("Button long pressed");
+        handleLongPress();
+    }
+
+    if (buttonState == HIGH && buttonStatePrevious == LOW) {
+        buttonStatePrevious = HIGH;
+        buttonStateLongPress = false;
+        handleButtonRelease();
+    }
+}
+
+// Maneja la presión larga del botón
+void handleLongPress() {
+    if (flagStateMachine == 1) {
+        if (!sendMessage("Released")) {
+            Serial.println("ERROR sending 'Released' message...");
+            flagStateMachine = 2;
+            digitalWrite(LED, LOW);
+            digitalWrite(RED, HIGH);
+        } else {
+            pressed_long = true;
+        }
+    } else if (flagStateMachine == 0) {
+        pressed_long = false;
+    }
+}
+
+// Maneja la liberación del botón
+void handleButtonRelease() {
+    if (buttonPressDuration < minButtonLongPressDuration) {
+        Serial.println("Button pressed shortly");
+
+        if (flagStateMachine == 0) {
+            if (mesh_port_num != 0) {
+                digitalWrite(RED, LOW);
+                setUpMesh();
+                flagStateMachine = 1;
+            }
+        } else if (flagStateMachine == 1) {
+            if (range_from_selection >= 5) {
+                if (!sendMessage("Change")) {
+                    Serial.println("ERROR sending 'Change' message...");
+                }
+            }
+        }
+    }
+    Serial.println("Button released");
+}
+
+/*- CODIGO ANTERIOR -*/
+/*- PENDIENTE A ELIMINACION -*/
+/*-  -*/
+void readButtonState2() {
   if (currentMillis - previousButtonMillis > intervalButton) {
     int buttonState = digitalRead(MAIN_BUTTON);
 

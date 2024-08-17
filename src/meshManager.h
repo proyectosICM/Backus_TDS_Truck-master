@@ -12,7 +12,14 @@ void changedConnectionCallback();
 void setUpMesh();
 void updateCredentials(uint16_t port_selected);
 bool sendMessage(String msg);
+
+
+void handleLongPress();
+void handleButtonRelease();
+void updateButtonState(int buttonState);
+
 void readButtonState();
+void readButtonState2();
 
 // Declaraciones de variables globales
 extern painlessMesh mesh;
