@@ -8,4 +8,10 @@
 #define EEPROM_SIZE 96
 
 
+
+
+// LEDS
+#define LED_RED   2
+#define LED_GREEN 5
+
 #endif // CONFIG_H
